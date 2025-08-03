@@ -9,9 +9,11 @@ import (
 )
 
 type MonthlyBalance struct {
-	Month string `json:"month"`
-	Year  int    `json:"year"`
-	Saldo int64  `json:"saldo"`
+	Month   string `json:"month"`
+	Year    int    `json:"year"`
+	Income  int64  `json:"income"`
+	Expense int64  `json:"expense"`
+	Saldo   int64  `json:"saldo"`
 }
 
 // @Summary Dashboard utama
@@ -55,10 +57,13 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 			Scan(&expense)
 
 		monthly = append(monthly, MonthlyBalance{
-			Month: target.Month().String(),
-			Year:  target.Year(),
-			Saldo: income - expense,
+			Month:   target.Month().String(),
+			Year:    target.Year(),
+			Income:  income,
+			Expense: expense,
+			Saldo:   income - expense,
 		})
+
 	}
 
 	response := map[string]interface{}{

@@ -8,6 +8,8 @@ import (
 
 	db "cash-flow-go/database"
 	"cash-flow-go/models"
+
+	"github.com/go-chi/chi"
 )
 
 // @Summary Tambah transaksi baru
@@ -20,6 +22,7 @@ import (
 // @Router /api/transactions [post]
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var tx models.Transaction
+
 	if err := json.NewDecoder(r.Body).Decode(&tx); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -30,7 +33,11 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx.CreatedAt = time.Now()
+	// Gunakan waktu sekarang jika CreatedAt tidak dikirim dari frontend
+	if tx.CreatedAt.IsZero() {
+		tx.CreatedAt = time.Now()
+	}
+
 	db.DB.Create(&tx)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(tx)
@@ -83,4 +90,29 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(txs)
+}
+
+// @Summary Hapus transaksi
+// @Description Menghapus transaksi berdasarkan ID
+// @Tags Transactions
+// @Param id path int true "Transaction ID"
+// @Success 200 {object} map[string]string
+// @Router /api/transactions/{id} [delete]
+func DeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	// Ambil ID dari URL
+	id := chi.URLParam(r, "id")
+
+	var tx models.Transaction
+	if err := db.DB.First(&tx, id).Error; err != nil {
+		http.Error(w, "Transaksi tidak ditemukan", http.StatusNotFound)
+		return
+	}
+
+	if err := db.DB.Delete(&tx).Error; err != nil {
+		http.Error(w, "Gagal menghapus transaksi", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Transaksi berhasil dihapus"})
 }

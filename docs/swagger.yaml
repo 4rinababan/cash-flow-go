@@ -1,20 +1,5 @@
 definitions:
   models.Transaction:
-    properties:
-      amount:
-        type: integer
-      categories:
-        items:
-          type: string
-        type: array
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      type:
-        type: string
     type: object
 info:
   contact: {}
@@ -112,6 +97,25 @@ paths:
           schema:
             $ref: '#/definitions/models.Transaction'
       summary: Tambah transaksi baru
+      tags:
+      - Transactions
+  /api/transactions/{id}:
+    delete:
+      description: Menghapus transaksi berdasarkan ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Hapus transaksi
       tags:
       - Transactions
 swagger: "2.0"
