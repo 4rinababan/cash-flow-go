@@ -52,15 +52,13 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 // @Param type query string false "Filter by type (pemasukan/pengeluaran)"
 // @Success 200 {array} models.Transaction
 // @Router /api/transactions [get]
+// GetTransactions handles fetching transactions with optional filters and pagination
 func GetTransactions(w http.ResponseWriter, r *http.Request) {
-	// Ambil query param
 	query := r.URL.Query()
 
+	// Pagination
 	page := 1
 	limit := 10
-	txType := query.Get("type") // pemasukan atau pengeluaran
-
-	// Convert string ke int untuk pagination
 	if val := query.Get("page"); val != "" {
 		if p, err := strconv.Atoi(val); err == nil && p > 0 {
 			page = p
@@ -72,24 +70,68 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var txs []models.Transaction
-	queryBuilder := db.DB.Order("created_at desc")
+	// Filters
+	txType := query.Get("type")
+	category := query.Get("category")
+	startDate := query.Get("start_date")
+	endDate := query.Get("end_date")
+	note := query.Get("note")
+	minAmount := query.Get("min_amount")
+	maxAmount := query.Get("max_amount")
 
+	// Base builder
+	queryBuilder := db.DB.Model(&models.Transaction{})
 	if txType == "pemasukan" || txType == "pengeluaran" {
 		queryBuilder = queryBuilder.Where("type = ?", txType)
 	}
+	if category != "" {
+		queryBuilder = queryBuilder.Where("category = ?", category)
+	}
+	if startDate != "" {
+		queryBuilder = queryBuilder.Where("created_at >= ?", startDate)
+	}
+	if endDate != "" {
+		queryBuilder = queryBuilder.Where("created_at <= ?", endDate)
+	}
+	if note != "" {
+		queryBuilder = queryBuilder.Where("note LIKE ?", "%"+note+"%")
+	}
+	if minAmount != "" {
+		if min, err := strconv.ParseFloat(minAmount, 64); err == nil {
+			queryBuilder = queryBuilder.Where("amount >= ?", min)
+		}
+	}
+	if maxAmount != "" {
+		if max, err := strconv.ParseFloat(maxAmount, 64); err == nil {
+			queryBuilder = queryBuilder.Where("amount <= ?", max)
+		}
+	}
 
-	// Apply pagination
+	// Hitung total count dan total amount dulu
+	var totalCount int64
+	var totalAmount float64
+	queryBuilder.Count(&totalCount)
+	queryBuilder.Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount)
+
+	// Ambil data transaksi dengan limit dan offset
+	var txs []models.Transaction
 	offset := (page - 1) * limit
-	queryBuilder = queryBuilder.Offset(offset).Limit(limit)
-
-	if err := queryBuilder.Find(&txs).Error; err != nil {
+	if err := queryBuilder.Order("created_at desc").Offset(offset).Limit(limit).Find(&txs).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Return response dengan data + meta
+	response := map[string]interface{}{
+		"data":         txs,
+		"total_count":  totalCount,
+		"total_amount": totalAmount,
+		"page":         page,
+		"limit":        limit,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(txs)
+	json.NewEncoder(w).Encode(response)
 }
 
 // @Summary Hapus transaksi
