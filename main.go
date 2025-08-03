@@ -22,6 +22,7 @@ func main() {
 
 	r.HandleFunc("/api/transactions", handlers.CreateTransaction).Methods("POST")
 	r.HandleFunc("/api/transactions", handlers.GetTransactions).Methods("GET")
+	r.HandleFunc("/api/transactions/{id}", handlers.DeleteTransaction).Methods("DELETE")
 
 	r.HandleFunc("/api/dashboard", handlers.GetDashboard).Methods("GET")
 	r.HandleFunc("/api/dashboard/bar", handlers.GetBarChart).Methods("GET")
@@ -32,5 +33,6 @@ func main() {
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	log.Println("Server running at :8889")
-	log.Fatal(http.ListenAndServe(":8889", r))
+	log.Fatal(http.ListenAndServeTLS(":443", "ssl/cert.pem", "ssl/key.pem", r))
+
 }
