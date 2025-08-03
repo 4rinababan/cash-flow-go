@@ -9,7 +9,7 @@ import (
 	db "cash-flow-go/database"
 	"cash-flow-go/models"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
@@ -155,7 +155,9 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} map[string]string
 // @Router /api/transactions/{id} [delete]
 func DeleteTransaction(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	vars := mux.Vars(r)
+	id := vars["id"]
+
 	tid, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "ID tidak valid", http.StatusBadRequest)
