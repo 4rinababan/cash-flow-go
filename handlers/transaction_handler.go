@@ -155,17 +155,15 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} map[string]string
 // @Router /api/transactions/{id} [delete]
 func DeleteTransaction(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "id")
-
-	// Parsing ID ke uint atau int sesuai kebutuhan
-	id, err := strconv.Atoi(idParam)
+	id := chi.URLParam(r, "id")
+	tid, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "ID tidak valid", http.StatusBadRequest)
 		return
 	}
 
 	var tx models.Transaction
-	if err := db.DB.First(&tx, "id = ?", id).Error; err != nil {
+	if err := db.DB.First(&tx, tid).Error; err != nil {
 		http.Error(w, "Transaksi tidak ditemukan", http.StatusNotFound)
 		return
 	}
