@@ -76,7 +76,7 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	category := query.Get("category")
 	startDate := query.Get("start_date")
 	endDate := query.Get("end_date")
-	note := query.Get("note")
+	description := query.Get("description")
 	minAmount := query.Get("min_amount")
 	maxAmount := query.Get("max_amount")
 
@@ -100,8 +100,8 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		if endDate != "" {
 			b = b.Where("created_at <= ?", endDate)
 		}
-		if note != "" {
-			b = b.Where("note LIKE ?", "%"+note+"%")
+		if description != "" {
+			b = b.Where("description LIKE ?", "%"+description+"%")
 		}
 		if minAmount != "" {
 			if min, err := strconv.ParseFloat(minAmount, 64); err == nil {
