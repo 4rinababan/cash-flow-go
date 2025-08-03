@@ -48,7 +48,7 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 			EXTRACT(MONTH FROM created_at) AS month, 
 			EXTRACT(YEAR FROM created_at) AS year
 		FROM transactions
-		ORDER BY EXTRACT(YEAR FROM created_at) DESC, EXTRACT(MONTH FROM created_at) DESC
+		ORDER BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)
 	`).Scan(&monthYears)
 
 	var monthly []MonthlyBalance
@@ -81,10 +81,16 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		prevSaldo = saldo
 	}
 
+	// Reverse hasil monthly agar tampilannya DESC (terbaru ke terlama)
+	for i, j := 0, len(monthly)-1; i < j; i, j = i+1, j-1 {
+		monthly[i], monthly[j] = monthly[j], monthly[i]
+	}
+
 	// Ambil 3 bulan terakhir
+
 	last3 := monthly
 	if len(monthly) > 3 {
-		last3 = monthly[len(monthly)-3:]
+		last3 = monthly[:3]
 	}
 
 	response := map[string]interface{}{
