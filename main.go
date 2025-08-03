@@ -33,6 +33,5 @@ func main() {
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	log.Println("Server running at :8889")
-	log.Fatal(http.ListenAndServeTLS(":443", "ssl/cert.pem", "ssl/key.pem", r))
-
+	log.Fatal(http.ListenAndServe(":8889", r))
 }
