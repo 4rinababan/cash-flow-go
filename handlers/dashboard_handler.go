@@ -112,8 +112,8 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Router /api/dashboard/bar [get]
 func GetBarChart(w http.ResponseWriter, r *http.Request) {
 	type Result struct {
-		Category string
-		Total    int
+		Category2 string
+		Total     int
 	}
 
 	var results []Result
