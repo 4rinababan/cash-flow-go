@@ -118,10 +118,10 @@ func GetBarChart(w http.ResponseWriter, r *http.Request) {
 
 	var results []Result
 	db.DB.Raw(`
-		SELECT unnest(categories) AS category, SUM(amount) AS total
+		SELECT unnest(categories) AS category2, SUM(amount) AS total
 		FROM transactions
 		WHERE type = 'pengeluaran'
-		GROUP BY category
+		GROUP BY category2
 	`).Scan(&results)
 
 	w.Header().Set("Content-Type", "application/json")
