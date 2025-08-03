@@ -1,5 +1,24 @@
 definitions:
   models.Transaction:
+    properties:
+      amount:
+        type: number
+      categories:
+        description: untuk Swagger
+        items:
+          type: string
+        type: array
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      type:
+        description: pemasukan / pengeluaran
+        type: string
     type: object
 info:
   contact: {}

@@ -10,6 +10,7 @@ import (
 	"cash-flow-go/models"
 
 	"github.com/go-chi/chi"
+	"gorm.io/gorm"
 )
 
 // @Summary Tambah transaksi baru
@@ -79,41 +80,54 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 	minAmount := query.Get("min_amount")
 	maxAmount := query.Get("max_amount")
 
-	// Base builder
+	// Builder utama untuk data transaksi
 	queryBuilder := db.DB.Model(&models.Transaction{})
-	if txType == "pemasukan" || txType == "pengeluaran" {
-		queryBuilder = queryBuilder.Where("type = ?", txType)
-	}
-	if category != "" {
-		queryBuilder = queryBuilder.Where("category = ?", category)
-	}
-	if startDate != "" {
-		queryBuilder = queryBuilder.Where("created_at >= ?", startDate)
-	}
-	if endDate != "" {
-		queryBuilder = queryBuilder.Where("created_at <= ?", endDate)
-	}
-	if note != "" {
-		queryBuilder = queryBuilder.Where("note LIKE ?", "%"+note+"%")
-	}
-	if minAmount != "" {
-		if min, err := strconv.ParseFloat(minAmount, 64); err == nil {
-			queryBuilder = queryBuilder.Where("amount >= ?", min)
+	// Builder terpisah untuk count dan sum
+	countBuilder := db.DB.Model(&models.Transaction{})
+	sumBuilder := db.DB.Model(&models.Transaction{})
+
+	// Fungsi untuk apply filter ke builder
+	applyFilters := func(b *gorm.DB) *gorm.DB {
+		if txType == "pemasukan" || txType == "pengeluaran" {
+			b = b.Where("type = ?", txType)
 		}
-	}
-	if maxAmount != "" {
-		if max, err := strconv.ParseFloat(maxAmount, 64); err == nil {
-			queryBuilder = queryBuilder.Where("amount <= ?", max)
+		if category != "" {
+			b = b.Where("category = ?", category)
 		}
+		if startDate != "" {
+			b = b.Where("created_at >= ?", startDate)
+		}
+		if endDate != "" {
+			b = b.Where("created_at <= ?", endDate)
+		}
+		if note != "" {
+			b = b.Where("note LIKE ?", "%"+note+"%")
+		}
+		if minAmount != "" {
+			if min, err := strconv.ParseFloat(minAmount, 64); err == nil {
+				b = b.Where("amount >= ?", min)
+			}
+		}
+		if maxAmount != "" {
+			if max, err := strconv.ParseFloat(maxAmount, 64); err == nil {
+				b = b.Where("amount <= ?", max)
+			}
+		}
+		return b
 	}
 
-	// Hitung total count dan total amount dulu
+	// Apply filter ke semua builder
+	queryBuilder = applyFilters(queryBuilder)
+	countBuilder = applyFilters(countBuilder)
+	sumBuilder = applyFilters(sumBuilder)
+
+	// Hitung total count dan total amount
 	var totalCount int64
 	var totalAmount float64
-	queryBuilder.Count(&totalCount)
-	queryBuilder.Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount)
+	countBuilder.Count(&totalCount)
+	sumBuilder.Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount)
 
-	// Ambil data transaksi dengan limit dan offset
+	// Ambil data transaksi dengan pagination
 	var txs []models.Transaction
 	offset := (page - 1) * limit
 	if err := queryBuilder.Order("created_at desc").Offset(offset).Limit(limit).Find(&txs).Error; err != nil {
@@ -121,7 +135,7 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return response dengan data + meta
+	// Response
 	response := map[string]interface{}{
 		"data":         txs,
 		"total_count":  totalCount,

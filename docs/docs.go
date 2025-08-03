@@ -191,7 +191,35 @@ const docTemplate = `{
     },
     "definitions": {
         "models.Transaction": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "categories": {
+                    "description": "untuk Swagger",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "pemasukan / pengeluaran",
+                    "type": "string"
+                }
+            }
         }
     }
 }`

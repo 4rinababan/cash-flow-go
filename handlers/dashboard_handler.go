@@ -44,9 +44,11 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	var monthYears []MonthYear
 	db.DB.Raw(`
-		SELECT DISTINCT EXTRACT(MONTH FROM created_at) AS month, EXTRACT(YEAR FROM created_at) AS year
+		SELECT DISTINCT 
+			EXTRACT(MONTH FROM created_at) AS month, 
+			EXTRACT(YEAR FROM created_at) AS year
 		FROM transactions
-		ORDER BY year, month
+		ORDER BY EXTRACT(YEAR FROM created_at) DESC, EXTRACT(MONTH FROM created_at) DESC
 	`).Scan(&monthYears)
 
 	var monthly []MonthlyBalance
