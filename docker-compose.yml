@@ -39,3 +39,4 @@ services:
 volumes:
   db_data:
     external: true
+  name: cash-flow-go_db_data
