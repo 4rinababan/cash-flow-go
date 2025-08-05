@@ -39,8 +39,7 @@ services:
 
 volumes:
   db_data:
-    external:
-      name: cash-flow-go_db_data
+
 
 networks:
   internal_net:
