@@ -44,4 +44,3 @@ volumes:
 networks:
   internal_net:
     driver: bridge
-    internal: true
