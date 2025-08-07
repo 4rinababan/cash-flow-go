@@ -1,5 +1,62 @@
 definitions:
+  models.MonthlyCategoryGroup:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.MonthlyCategoryItem'
+        type: array
+      month:
+        type: string
+    type: object
+  models.MonthlyCategoryItem:
+    properties:
+      category2:
+        type: string
+      total:
+        type: number
+    type: object
+  models.ResponseWithMonths:
+    properties:
+      months:
+        items:
+          $ref: '#/definitions/models.MonthlyCategoryGroup'
+        type: array
+    type: object
   models.Transaction:
+    properties:
+      amount:
+        example: 15000
+        type: number
+      categories:
+        example:
+        - '["makanan"'
+        - '"jajan"]'
+        items:
+          type: string
+        type: array
+      categories_view:
+        description: View-only field for Swagger or API response
+        items:
+          type: string
+        type: array
+      category:
+        example: makanan
+        type: string
+      created_at:
+        example: "2025-08-07T12:00:00Z"
+        type: string
+      description:
+        example: Beli Mie Gacoan
+        type: string
+      id:
+        example: 1
+        type: integer
+      transaction_at:
+        example: "2025-08-07T12:00:00Z"
+        type: string
+      type:
+        example: pengeluaran
+        type: string
     type: object
   models.TransactionResponse:
     properties:
@@ -68,6 +125,26 @@ paths:
       summary: Grafik donat pemasukan
       tags:
       - Dashboard
+  /api/dashboard/monthly-bar:
+    get:
+      description: Menampilkan pengeluaran per kategori tiap bulan (maksimal 3 bulan
+        terakhir)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseWithMonths'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Statistik pengeluaran 3 bulan terakhir
+      tags:
+      - Statistik
   /api/transactions:
     get:
       description: Menampilkan semua transaksi dengan filter dan pagination

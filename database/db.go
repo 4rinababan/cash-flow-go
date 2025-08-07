@@ -1,10 +1,11 @@
 package db
 
 import (
+	"cash-flow-go/models"
 	"fmt"
 	"os"
 
-	"cash-flow-go/models"
+	// "cash-flow-go/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,5 +29,8 @@ func Init() {
 		panic("Gagal konek DB: " + err.Error())
 	}
 
+	// if os.Getenv("ENV") != "production" {
 	DB.AutoMigrate(&models.Transaction{})
+	// }
+
 }

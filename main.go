@@ -28,6 +28,7 @@ func main() {
 	r.HandleFunc("/api/dashboard", handlers.GetDashboard).Methods("GET")
 	r.HandleFunc("/api/dashboard/bar", handlers.GetBarChart).Methods("GET")
 	r.HandleFunc("/api/dashboard/donut", handlers.GetDonutChart).Methods("GET")
+	r.HandleFunc("/api/dashboard/monthly-bar", handlers.GetMonthlyBarChart).Methods("GET")
 
 	// Swagger endpoint
 	// Swagger endpoint (pastikan pakai handler, bukan "value")

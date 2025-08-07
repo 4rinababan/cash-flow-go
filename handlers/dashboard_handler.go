@@ -104,6 +104,64 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetMonthlyBarChart godoc
+// @Summary Statistik pengeluaran 3 bulan terakhir
+// @Description Menampilkan pengeluaran per kategori tiap bulan (maksimal 3 bulan terakhir)
+// @Tags Statistik
+// @Produce json
+// @Success 200 {object} models.ResponseWithMonths
+// @Failure 500 {object} map[string]string
+// @Router /api/dashboard/monthly-bar [get]
+func GetMonthlyBarChart(w http.ResponseWriter, r *http.Request) {
+	type Row struct {
+		Month     string  `json:"month"`
+		Category2 string  `json:"category2"`
+		Total     float64 `json:"total"`
+	}
+
+	var rows []Row
+
+	err := db.DB.Raw(`
+		SELECT 
+			to_char(date_trunc('month', transaction_at), 'YYYY-MM') AS month,
+			unnest(categories) AS category2,
+			SUM(amount) AS total
+		FROM transactions
+		WHERE 
+			type = 'pengeluaran' AND
+			transaction_at >= NOW() - INTERVAL '3 months'
+		GROUP BY month, category2
+		ORDER BY month ASC
+	`).Scan(&rows).Error
+
+	if err != nil {
+		http.Error(w, "Gagal mengambil data", http.StatusInternalServerError)
+		return
+	}
+
+	grouped := map[string][]models.MonthlyCategoryItem{}
+
+	for _, r := range rows {
+		grouped[r.Month] = append(grouped[r.Month], models.MonthlyCategoryItem{
+			Category2: r.Category2,
+			Total:     r.Total,
+		})
+	}
+
+	var result []models.MonthlyCategoryGroup
+	for month, cats := range grouped {
+		result = append(result, models.MonthlyCategoryGroup{
+			Month:      month,
+			Categories: cats,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(models.ResponseWithMonths{
+		Months: result,
+	})
+}
+
 // @Summary Grafik batang pengeluaran
 // @Description Menampilkan grafik batang pengeluaran per kategori
 // @Tags Dashboard

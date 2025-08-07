@@ -84,6 +84,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dashboard/monthly-bar": {
+            "get": {
+                "description": "Menampilkan pengeluaran per kategori tiap bulan (maksimal 3 bulan terakhir)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Statistik"
+                ],
+                "summary": "Statistik pengeluaran 3 bulan terakhir",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseWithMonths"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/transactions": {
             "get": {
                 "description": "Menampilkan semua transaksi dengan filter dan pagination",
@@ -228,8 +257,91 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.MonthlyCategoryGroup": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MonthlyCategoryItem"
+                    }
+                },
+                "month": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MonthlyCategoryItem": {
+            "type": "object",
+            "properties": {
+                "category2": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.ResponseWithMonths": {
+            "type": "object",
+            "properties": {
+                "months": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MonthlyCategoryGroup"
+                    }
+                }
+            }
+        },
         "models.Transaction": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 15000
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"makanan\"",
+                        "\"jajan\"]"
+                    ]
+                },
+                "categories_view": {
+                    "description": "View-only field for Swagger or API response",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "category": {
+                    "type": "string",
+                    "example": "makanan"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2025-08-07T12:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Beli Mie Gacoan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "transaction_at": {
+                    "type": "string",
+                    "example": "2025-08-07T12:00:00Z"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "pengeluaran"
+                }
+            }
         },
         "models.TransactionResponse": {
             "type": "object",
