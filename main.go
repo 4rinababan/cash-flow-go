@@ -23,6 +23,7 @@ func main() {
 	r.HandleFunc("/api/transactions", handlers.CreateTransaction).Methods("POST")
 	r.HandleFunc("/api/transactions", handlers.GetTransactions).Methods("GET")
 	r.HandleFunc("/api/transactions/{id}", handlers.DeleteTransaction).Methods("DELETE")
+	r.HandleFunc("/api/transactions/top5", handlers.GetTop5Transactions).Methods("GET")
 
 	r.HandleFunc("/api/dashboard", handlers.GetDashboard).Methods("GET")
 	r.HandleFunc("/api/dashboard/bar", handlers.GetBarChart).Methods("GET")

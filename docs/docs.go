@@ -120,7 +120,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Transaction"
+                                "$ref": "#/definitions/models.TransactionResponse"
                             }
                         }
                     }
@@ -159,6 +159,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/transactions/top5": {
+            "get": {
+                "description": "Mendapatkan 5 transaksi terbaru berdasarkan tanggal dibuat (created_at DESC).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get top 5 latest transactions",
+                "responses": {
+                    "200": {
+                        "description": "Daftar 5 transaksi terbaru",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/models.TransactionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/transactions/{id}": {
             "delete": {
                 "description": "Menghapus transaksi berdasarkan ID",
@@ -191,32 +229,31 @@ const docTemplate = `{
     },
     "definitions": {
         "models.Transaction": {
+            "type": "object"
+        },
+        "models.TransactionResponse": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "number"
                 },
-                "categories": {
-                    "description": "untuk Swagger",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "category": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "string untuk tampil WIB",
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "note": {
+                "transaction_at": {
                     "type": "string"
                 },
                 "type": {
-                    "description": "pemasukan / pengeluaran",
                     "type": "string"
                 }
             }

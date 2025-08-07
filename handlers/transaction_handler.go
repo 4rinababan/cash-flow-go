@@ -36,8 +36,12 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 	// Gunakan waktu sekarang jika CreatedAt tidak dikirim dari frontend
 	if tx.CreatedAt.IsZero() {
-		tx.CreatedAt = time.Now()
+		tx.TransactionAt = time.Now()
+	} else {
+		tx.TransactionAt = tx.CreatedAt
 	}
+
+	tx.CreatedAt = time.Now()
 
 	db.DB.Create(&tx)
 	w.WriteHeader(http.StatusCreated)
@@ -51,10 +55,13 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 // @Param page query int false "Page number (default 1)"
 // @Param limit query int false "Limit per page (default 10)"
 // @Param type query string false "Filter by type (pemasukan/pengeluaran)"
-// @Success 200 {array} models.Transaction
+// @Success 200 {array} models.TransactionResponse
 // @Router /api/transactions [get]
 // GetTransactions handles fetching transactions with optional filters and pagination
 func GetTransactions(w http.ResponseWriter, r *http.Request) {
+
+	// response DTO
+
 	query := r.URL.Query()
 
 	// Pagination
@@ -95,10 +102,10 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 			b = b.Where("category = ?", category)
 		}
 		if startDate != "" {
-			b = b.Where("created_at >= ?", startDate)
+			b = b.Where("transaction_at >= ?", startDate)
 		}
 		if endDate != "" {
-			b = b.Where("created_at <= ?", endDate)
+			b = b.Where("transaction_at <= ?", endDate)
 		}
 		if description != "" {
 			b = b.Where("description LIKE ?", "%"+description+"%")
@@ -135,13 +142,70 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var txResponses []models.TransactionResponse
+	for _, tx := range txs {
+		txResponses = append(txResponses, models.TransactionResponse{
+			ID:            tx.ID,
+			Type:          tx.Type,
+			Category:      tx.Category,
+			Description:   tx.Description,
+			Amount:        tx.Amount,
+			TransactionAt: ToWIB(tx.CreatedAt),
+			CreatedAt:     ToWIB(tx.CreatedAt),
+		})
+	}
+
 	// Response
 	response := map[string]interface{}{
-		"data":         txs,
+		"data":         txResponses,
 		"total_count":  totalCount,
 		"total_amount": totalAmount,
 		"page":         page,
 		"limit":        limit,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetTop5Transactions godoc
+// @Summary Get top 5 latest transactions
+// @Description Mendapatkan 5 transaksi terbaru berdasarkan tanggal dibuat (created_at DESC).
+// @Tags Transactions
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string][]models.TransactionResponse "Daftar 5 transaksi terbaru"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/transactions/top5 [get]
+func GetTop5Transactions(w http.ResponseWriter, r *http.Request) {
+	// Ambil 5 transaksi terbaru
+	var txs []models.Transaction
+	if err := db.DB.
+		Model(&models.Transaction{}).
+		Order("created_at DESC").
+		Limit(5).
+		Find(&txs).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Format ke response DTO
+	var txResponses []models.TransactionResponse
+	for _, tx := range txs {
+		txResponses = append(txResponses, models.TransactionResponse{
+			ID:            tx.ID,
+			Type:          tx.Type,
+			Category:      tx.Category,
+			Description:   tx.Description,
+			Amount:        tx.Amount,
+			TransactionAt: ToWIB(tx.CreatedAt),
+			CreatedAt:     ToWIB(tx.CreatedAt),
+		})
+	}
+
+	// Response JSON
+	response := map[string]interface{}{
+		"top_transactions": txResponses,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

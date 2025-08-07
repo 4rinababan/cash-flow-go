@@ -1,23 +1,22 @@
 definitions:
   models.Transaction:
+    type: object
+  models.TransactionResponse:
     properties:
       amount:
         type: number
-      categories:
-        description: untuk Swagger
-        items:
-          type: string
-        type: array
       category:
         type: string
       created_at:
+        description: string untuk tampil WIB
+        type: string
+      description:
         type: string
       id:
         type: integer
-      note:
+      transaction_at:
         type: string
       type:
-        description: pemasukan / pengeluaran
         type: string
     type: object
 info:
@@ -92,7 +91,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Transaction'
+              $ref: '#/definitions/models.TransactionResponse'
             type: array
       summary: Ambil daftar transaksi
       tags:
@@ -135,6 +134,32 @@ paths:
               type: string
             type: object
       summary: Hapus transaksi
+      tags:
+      - Transactions
+  /api/transactions/top5:
+    get:
+      consumes:
+      - application/json
+      description: Mendapatkan 5 transaksi terbaru berdasarkan tanggal dibuat (created_at
+        DESC).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Daftar 5 transaksi terbaru
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/models.TransactionResponse'
+              type: array
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get top 5 latest transactions
       tags:
       - Transactions
 swagger: "2.0"
