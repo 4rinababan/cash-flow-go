@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/campaigns": {
             "post": {
-                "description": "Mengunggah campaign dan menjadikannya aktif (hanya 1 yang aktif).",
+                "description": "Mengunggah campaign (dengan waktu mulai \u0026 akhir) dan menjadikannya aktif.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -27,12 +27,26 @@ const docTemplate = `{
                 "tags": [
                     "Campaign"
                 ],
-                "summary": "Upload campaign baru (dengan gambar)",
+                "summary": "Upload campaign baru dengan waktu aktif",
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Gambar campaign (jpg/png)",
+                        "description": "Gambar campaign",
                         "name": "image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Waktu mulai campaign (format: 2006-01-02T15:04:05)",
+                        "name": "start_at",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Waktu akhir campaign (format: 2006-01-02T15:04:05)",
+                        "name": "end_at",
                         "in": "formData",
                         "required": true
                     }
@@ -70,14 +84,14 @@ const docTemplate = `{
         },
         "/api/campaigns/active": {
             "get": {
-                "description": "Mendapatkan campaign yang sedang aktif untuk ditampilkan sebagai popup.",
+                "description": "Mendapatkan campaign yang sedang aktif berdasarkan waktu saat ini",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Campaign"
                 ],
-                "summary": "Ambil campaign yang aktif saat ini",
+                "summary": "Ambil campaign yang aktif dan dalam rentang waktu",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -342,10 +356,16 @@ const docTemplate = `{
         "handlers.Campaign": {
             "type": "object",
             "properties": {
+                "end_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "image_url": {
+                    "type": "string"
+                },
+                "start_at": {
                     "type": "string"
                 }
             }

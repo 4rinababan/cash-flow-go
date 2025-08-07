@@ -1,9 +1,13 @@
 definitions:
   handlers.Campaign:
     properties:
+      end_at:
+        type: string
       id:
         type: integer
       image_url:
+        type: string
+      start_at:
         type: string
     type: object
   models.MonthlyCategoryGroup:
@@ -90,13 +94,24 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Mengunggah campaign dan menjadikannya aktif (hanya 1 yang aktif).
+      description: Mengunggah campaign (dengan waktu mulai & akhir) dan menjadikannya
+        aktif.
       parameters:
-      - description: Gambar campaign (jpg/png)
+      - description: Gambar campaign
         in: formData
         name: image
         required: true
         type: file
+      - description: 'Waktu mulai campaign (format: 2006-01-02T15:04:05)'
+        in: formData
+        name: start_at
+        required: true
+        type: string
+      - description: 'Waktu akhir campaign (format: 2006-01-02T15:04:05)'
+        in: formData
+        name: end_at
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -118,13 +133,12 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Upload campaign baru (dengan gambar)
+      summary: Upload campaign baru dengan waktu aktif
       tags:
       - Campaign
   /api/campaigns/active:
     get:
-      description: Mendapatkan campaign yang sedang aktif untuk ditampilkan sebagai
-        popup.
+      description: Mendapatkan campaign yang sedang aktif berdasarkan waktu saat ini
       produces:
       - application/json
       responses:
@@ -138,7 +152,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Ambil campaign yang aktif saat ini
+      summary: Ambil campaign yang aktif dan dalam rentang waktu
       tags:
       - Campaign
   /api/dashboard:
