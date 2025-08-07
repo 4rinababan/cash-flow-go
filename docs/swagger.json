@@ -4,6 +4,88 @@
         "contact": {}
     },
     "paths": {
+        "/api/campaigns": {
+            "post": {
+                "description": "Mengunggah campaign dan menjadikannya aktif (hanya 1 yang aktif).",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Campaign"
+                ],
+                "summary": "Upload campaign baru (dengan gambar)",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Gambar campaign (jpg/png)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/campaigns/active": {
+            "get": {
+                "description": "Mendapatkan campaign yang sedang aktif untuk ditampilkan sebagai popup.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Campaign"
+                ],
+                "summary": "Ambil campaign yang aktif saat ini",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Campaign"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/dashboard": {
             "get": {
                 "description": "Menampilkan ringkasan transaksi",
@@ -246,6 +328,17 @@
         }
     },
     "definitions": {
+        "handlers.Campaign": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                }
+            }
+        },
         "models.MonthlyCategoryGroup": {
             "type": "object",
             "properties": {

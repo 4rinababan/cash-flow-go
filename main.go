@@ -30,6 +30,12 @@ func main() {
 	r.HandleFunc("/api/dashboard/donut", handlers.GetDonutChart).Methods("GET")
 	r.HandleFunc("/api/dashboard/monthly-bar", handlers.GetMonthlyBarChart).Methods("GET")
 
+	r.HandleFunc("/api/campaigns", handlers.CreateCampaign).Methods("POST")
+	r.HandleFunc("/api/campaigns/active", handlers.GetActiveCampaign).Methods("GET")
+
+	// Serve static files (for image access)
+	r.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
 	// Swagger endpoint
 	// Swagger endpoint (pastikan pakai handler, bukan "value")
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
